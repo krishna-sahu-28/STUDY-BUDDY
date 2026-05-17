@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Buddy RAG - Futuristic AI Study Assistant</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="style.css">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Prism.js Tomorrow Dark Syntax Highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+
+  <!-- Background Interactive Particles Canvas -->
+  <canvas id="particles-canvas"></canvas>
+  <div class="grid-overlay"></div>
+
+  <div class="app-container">
+    
+    <!-- Animated Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <i class="fa-solid fa-brain"></i>
+        </div>
+        <div class="sidebar-title">STUDY BUDDY</div>
+      </div>
+      
+      <ul class="sidebar-menu">
+        <li class="menu-item active" data-view="dashboard" id="nav-dashboard">
+          <i class="fa-solid fa-house"></i>
+          <span>Dashboard</span>
+        </li>
+        <li class="menu-item" data-view="upload" id="nav-upload">
+          <i class="fa-solid fa-folder-open"></i>
+          <span>PDF Manager</span>
+        </li>
+        <li class="menu-item" data-view="hub" id="nav-hub">
+          <i class="fa-solid fa-graduation-cap"></i>
+          <span>Study Hub</span>
+        </li>
+        <li class="menu-item" data-view="examprep" id="nav-examprep">
+          <i class="fa-solid fa-fire"></i>
+          <span>Exam Prep</span>
+        </li>
+        <li class="menu-item" data-view="analytics" id="nav-analytics">
+          <i class="fa-solid fa-chart-line"></i>
+          <span>Analytics</span>
+        </li>
+        <li class="menu-item" data-view="settings" id="nav-settings">
+          <i class="fa-solid fa-sliders"></i>
+          <span>Settings</span>
+        </li>
+      </ul>
+      
+      <div class="sidebar-footer">
+        <button class="sidebar-toggle-btn" id="sidebar-toggle" title="Collapse/Expand Menu">
+          <i class="fa-solid fa-angle-left"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main View Content Area -->
+    <main class="main-content">
+      
+      <!-- VIEW 1: DASHBOARD & RAG CHAT -->
+      <section class="view-section active" id="view-dashboard">
+        
+        <!-- Welcome Hologram (Displays when no PDFs are uploaded) -->
+        <div class="landing-view" id="landing-experience">
+          <div class="hologram-avatar-container">
+            <div class="hologram-pulse-ring"></div>
+            <div class="hologram-pulse-ring-inner"></div>
+            <div class="hologram-core"></div>
+          </div>
+          <h1 class="landing-title">Study Buddy RAG</h1>
+          <p class="landing-subtitle">
+            Activate the next-generation AI Study Assistant. Upload textbooks, lecture slides, or revision notes. Ask complex questions and receive immediate, context-grounded, citation-backed responses.
+          </p>
+          <button class="btn-futuristic" id="activate-upload-btn">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Load Study Material
+          </button>
+        </div>
+
+        <!-- RAG Core Dual-Pane Workspace (Hidden initially) -->
+        <div class="panel-grid" id="rag-workspace" style="display: none;">
+          
+          <!-- Left/Main Chat Card -->
+          <div class="right-panel glass-card chat-container">
+            
+            <div class="chat-header">
+              <div class="chat-title-info">
+                <div class="pulse-dot" id="rag-status-dot"></div>
+                <div class="chat-title-text" id="rag-status-text">RAG Active • 0 Documents</div>
+              </div>
+              <div class="chat-actions">
+                <button class="btn-icon" id="clear-chat-btn" title="Clear Conversation">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+                <button class="btn-icon" id="download-chat-btn" title="Download Conversation">
+                  <i class="fa-solid fa-download"></i>
+                </button>
+                <button class="btn-icon" id="toggle-sources-btn" title="Toggle Citations Panel">
+                  <i class="fa-solid fa-quote-left"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Chat Messages Log -->
+            <div class="chat-messages" id="chat-messages-container">
+              <!-- Animated Welcome Bubble -->
+              <div class="msg ai">
+                <div class="avatar"><i class="fa-solid fa-robot"></i></div>
+                <div class="bubble">
+                  <p>Welcome, Operator. Neural RAG core initialized. ⚡</p>
+                  <p>I am online and ready to assist. Please upload your PDFs, textbooks, or papers in the <strong>PDF Manager</strong> tab. Once loaded, I will answer questions strictly referencing your document's text with page citations, preventing any AI hallucinations.</p>
+                  <p>How would you like to accelerate your study session today?</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chat Input Controls -->
+            <div class="chat-input-wrapper">
+              <input type="text" class="chat-input-field" id="chat-user-input" placeholder="Ask a question about your uploaded materials..." autocomplete="off">
+              <button class="btn-icon mic-btn" id="voice-input-btn" title="Voice Input (Speech-to-Text)">
+                <i class="fa-solid fa-microphone"></i>
+              </button>
+              <button class="btn-icon" id="chat-send-btn" title="Send Query">
+                <i class="fa-solid fa-paper-plane"></i>
+              </button>
+            </div>
+            
+          </div>
+
+          <!-- Collapsible Citation Chunks Drawer -->
+          <div class="glass-card sources-panel" id="sources-citation-panel">
+            <div class="sources-header">
+              <span>Source Citations (RAG Context)</span>
+              <button class="btn-bubble-action" id="close-sources-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="sources-list" id="sources-list-container">
+              <div class="loading-container" style="min-height: 100px; justify-content: center;">
+                <p style="font-size: 12px; color: var(--text-muted); text-align: center;">Submit a question to see the retrieved grounding text segments here.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        
+      </section>
+
+      <!-- VIEW 2: PDF MANAGER & UPLOAD -->
+      <section class="view-section" id="view-upload">
+        <div class="glass-card upload-container">
+          <div class="panel-header">
+            <i class="fa-solid fa-upload"></i> PDF Study Materials
+          </div>
+          
+          <div class="drag-zone" id="pdf-drag-zone">
+            <div class="scanner-bar" id="drag-scanner"></div>
+            <i class="fa-solid fa-file-pdf upload-icon"></i>
+            <div class="upload-text">Drag & drop your study PDFs here</div>
+            <div class="upload-hint">or click to browse local files (Multi-PDF supported)</div>
+            <input type="file" class="file-input" id="pdf-file-input" accept=".pdf" multiple>
+          </div>
+
+          <div class="files-queue" id="uploaded-files-queue">
+            <!-- Uploaded file chips will render here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: STUDY HUB (SUMMARIES, PRACTICE, QUIZ) -->
+      <section class="view-section" id="view-hub">
+        <div class="glass-card hub-view" style="padding: 24px;">
+          
+          <div class="panel-header" style="margin-bottom: 10px; border-bottom: none;">
+            <i class="fa-solid fa-graduation-cap"></i> Intelligent Study Hub
+          </div>
+
+          <!-- Interactive Tabs -->
+          <div class="hub-tabs">
+            <button class="hub-tab-btn active" data-tab="summary">
+              <i class="fa-solid fa-file-invoice"></i> Summaries
+            </button>
+            <button class="hub-tab-btn" data-tab="questions">
+              <i class="fa-solid fa-circle-question"></i> Exam Questions
+            </button>
+            <button class="hub-tab-btn" data-tab="quiz">
+              <i class="fa-solid fa-gamepad"></i> Revision Quiz
+            </button>
+          </div>
+
+          <!-- TAB 1: SUMMARY GENERATOR -->
+          <div class="tab-pane active" id="tab-summary">
+            <div class="hub-action-banner" id="summary-banner">
+              <i class="fa-solid fa-brain" style="font-size: 40px; color: var(--neon-purple); filter: drop-shadow(0 0 10px var(--neon-purple-glow));"></i>
+              <h2>Generate Smart Core Summary</h2>
+              <p class="banner-desc">
+                Our AI will analyze the uploaded notebooks and textbook chapters to synthesize an interactive summary highlighting primary definitions, key formulas, and core concepts.
+              </p>
+              <button class="btn-futuristic" id="generate-summary-btn">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Synthesize Summary
+              </button>
+            </div>
+            
+            <div class="glass-card hub-content-box" id="summary-result-container" style="display: none;">
+              <!-- Summary Markdown text displays here -->
+            </div>
+          </div>
+
+          <!-- TAB 2: EXAM QUESTIONS GENERATOR -->
+          <div class="tab-pane" id="tab-questions">
+            <div class="hub-action-banner" id="questions-banner">
+              <i class="fa-solid fa-circle-question" style="font-size: 40px; color: var(--neon-blue); filter: drop-shadow(0 0 10px var(--neon-blue-glow));"></i>
+              <h2>Extract Key Exam Questions</h2>
+              <p class="banner-desc">
+                Auto-generate the most probable, conceptual exam questions from your study materials. Clicking any question will instantly ask it in the Chat workspace!
+              </p>
+              <button class="btn-futuristic" id="generate-questions-btn" style="background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));">
+                <i class="fa-solid fa-bolt"></i> Extract Practice Questions
+              </button>
+            </div>
+
+            <div class="questions-grid" id="questions-result-grid" style="display: none;">
+              <!-- Question cards will dynamically render here -->
+            </div>
+          </div>
+
+          <!-- TAB 3: MCQ REVISION QUIZ -->
+          <div class="tab-pane" id="tab-quiz">
+            <div class="hub-action-banner" id="quiz-banner">
+              <i class="fa-solid fa-gamepad" style="font-size: 40px; color: var(--neon-green); filter: drop-shadow(0 0 10px var(--neon-green-glow));"></i>
+              <h2>AI Practice MCQ Quiz</h2>
+              <p class="banner-desc">
+                Test your conceptual grasp with an interactive multi-choice quiz. Generate unique questions with customized feedback explaining correct answers instantly.
+              </p>
+              <button class="btn-futuristic" id="generate-quiz-btn" style="background: linear-gradient(135deg, var(--neon-green), var(--neon-blue)); box-shadow: 0 0 15px var(--neon-green-glow);">
+                <i class="fa-solid fa-play"></i> Initialize Revision Quiz
+              </button>
+            </div>
+
+            <!-- Interactive Quiz Gameplay Wrapper -->
+            <div class="quiz-game-wrapper" id="quiz-game-container" style="display: none;">
+              <div class="quiz-progress-bar">
+                <div class="quiz-progress-fill" id="quiz-progress-fill-bar"></div>
+              </div>
+              <div class="quiz-question-header">
+                <span id="quiz-question-number">Question 1 of 5</span>
+                <span id="quiz-timer">Score: 0 / 5</span>
+              </div>
+              <h3 class="quiz-question-text" id="quiz-question-text-area">
+                Loading question context...
+              </h3>
+              <div class="quiz-options-list" id="quiz-options-container">
+                <!-- Interactive option rows will render here -->
+              </div>
+              <div class="quiz-explanation-box" id="quiz-explanation-area">
+                <!-- Explanations render here post-answer -->
+              </div>
+              <div class="quiz-footer">
+                <button class="btn-futuristic" id="quiz-next-btn" style="padding: 10px 20px; font-size: 11px;">
+                  Next Question <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Quiz Final Scoreboard Screen -->
+            <div class="glass-card score-board" id="quiz-score-container" style="display: none;">
+              <div class="score-radial">
+                <svg class="score-radial-svg" viewBox="0 0 160 160">
+                  <defs>
+                    <linearGradient id="score-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="var(--neon-purple)" />
+                      <stop offset="100%" stop-color="var(--neon-blue)" />
+                    </linearGradient>
+                  </defs>
+                  <circle class="score-radial-bg" cx="80" cy="80" r="70" />
+                  <circle class="score-radial-progress" id="score-radial-stroke" cx="80" cy="80" r="70" />
+                </svg>
+                <div class="score-value" id="score-value-text">4/5</div>
+              </div>
+              <h2 class="score-message" id="score-message-text">Excellent Mastery!</h2>
+              <p class="score-advice" id="score-advice-text">You have shown high comprehension of the material. Keep up the high score!</p>
+              <button class="btn-futuristic" id="quiz-restart-btn">
+                <i class="fa-solid fa-rotate-left"></i> Retake Quiz
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      <!-- VIEW 4: ANALYTICS & INSIGHTS -->
+      <section class="view-section" id="view-analytics">
+        <div class="hub-view">
+          
+          <!-- Animated Numerical Indicators -->
+          <div class="stats-grid">
+            <div class="glass-card stat-card">
+              <i class="fa-solid fa-file-lines"></i>
+              <div class="stat-value" id="stat-pages">0</div>
+              <div class="stat-label">Pages Extracted</div>
+            </div>
+            <div class="glass-card stat-card purple">
+              <i class="fa-solid fa-database"></i>
+              <div class="stat-value" id="stat-chunks">0</div>
+              <div class="stat-label">Knowledge Chunks</div>
+            </div>
+            <div class="glass-card stat-card pink">
+              <i class="fa-solid fa-comments"></i>
+              <div class="stat-value" id="stat-questions">0</div>
+              <div class="stat-label">Questions Asked</div>
+            </div>
+            <div class="glass-card stat-card green">
+              <i class="fa-solid fa-award"></i>
+              <div class="stat-value" id="stat-accuracy">98%</div>
+              <div class="stat-label">RAG Groundedness</div>
+            </div>
+          </div>
+
+          <div class="dashboard-sections">
+            <!-- CSS Bar Chart Card -->
+            <div class="glass-card chart-card">
+              <div class="panel-header" style="border-bottom: none; margin-bottom: 10px;">
+                <i class="fa-solid fa-chart-simple"></i> Knowledge Density per Document
+              </div>
+              <div class="bar-chart-container" id="bar-chart-container-area">
+                <!-- Dynamic bars render here -->
+                <div class="loading-container" style="flex-grow: 1; height: 100%; justify-content: center;">
+                  <p style="font-size: 11px; color: var(--text-muted);">Please upload PDF files to generate knowledge charts.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Smart AI Study Insights Panel -->
+            <div class="glass-card chart-card">
+              <div class="panel-header" style="border-bottom: none; margin-bottom: 10px;">
+                <i class="fa-solid fa-lightbulb"></i> Neural Revision Insights
+              </div>
+              <div class="insights-list" id="insights-list-container">
+                <div class="insight-item">
+                  <i class="fa-solid fa-robot"></i>
+                  <div class="insight-item-text">
+                    Welcome to your Analytics dashboard. Once your files are uploaded and processed, the AI will evaluate the information density, draft customized insights, and track your metrics.
+                  </div>
+                </div>
+                <div class="insight-item">
+                  <i class="fa-solid fa-satellite-dish"></i>
+                  <div class="insight-item-text">
+                    <strong>Smart Revision Tip:</strong> Use the "Revision Quiz" tab in Study Hub regularly. It leverages active recall based on your customized vector store chunks!
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- VIEW 5: SETTINGS & RAG CONFIGURATION -->
+      <section class="view-section" id="view-settings">
+        <div class="glass-card" style="padding: 24px; flex-grow: 1;">
+          
+          <div class="panel-header">
+            <i class="fa-solid fa-sliders"></i> System Configurations
+          </div>
+
+          <div class="settings-grid">
+            
+            <!-- Group A: API Status & Custom Key Override -->
+            <div class="setting-group" style="grid-column: span 2;">
+              <div class="setting-label">
+                <span>Google Gemini API Config</span>
+                <span style="color: var(--neon-green); font-size: 11px;"><i class="fa-solid fa-circle-check"></i> Demo Key Connected</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.15); border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
+                  <i class="fa-solid fa-shield-halved" style="color: var(--neon-green); font-size: 16px; filter: drop-shadow(0 0 4px var(--neon-green-glow));"></i>
+                  <div style="font-size: 11px; color: var(--text-muted);">
+                    <strong style="color: var(--text-primary);">Demo Mode Active:</strong> A shared Gemini Key is configured. If you encounter <span style="color: var(--neon-pink); font-weight:600;">Quota Exceeded (429)</span> errors, please enter your own API key below to get unlimited personal access.
+                  </div>
+                </div>
+                
+                <div class="setting-label" style="margin-top: 5px;">
+                  <span>Custom API Key (Override)</span>
+                  <a href="https://aistudio.google.com/" target="_blank" style="color: var(--neon-blue); text-decoration: none; font-size: 11px;"><i class="fa-solid fa-circle-info"></i> Get Free Key</a>
+                </div>
+                <div class="setting-input-wrapper">
+                  <input type="password" class="setting-input" id="settings-api-key" placeholder="Enter your own Gemini API Key to bypass quota limits...">
+                  <button class="setting-input-eye" id="toggle-key-visibility-btn" type="button" title="Toggle Visibility">
+                    <i class="fa-solid fa-eye-slash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Group B: Speech Settings -->
+            <div class="setting-group">
+              <div class="setting-label">Voice Synthesis Speech Speed</div>
+              <div class="slider-group">
+                <input type="range" class="range-slider" id="settings-speech-rate" min="0.5" max="2" step="0.1" value="1.0">
+                <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                  <span>Slow</span>
+                  <span class="range-value" id="settings-speech-rate-val">1.0x</span>
+                  <span>Fast</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Group C: RAG Parameters -->
+            <div class="setting-group slider-group">
+              <div class="setting-label">
+                <span>RAG Text Chunk Size</span>
+                <span class="range-value" id="settings-chunk-size-val">800 chars</span>
+              </div>
+              <input type="range" class="range-slider" id="settings-chunk-size" min="300" max="2500" step="50" value="800">
+              <span style="font-size: 9px; color: var(--text-muted);">Defines the size of individual text segments for retrieval. Larger sizes provide wider context but consume more LLM tokens.</span>
+            </div>
+
+            <!-- Group D: RAG Overlap -->
+            <div class="setting-group slider-group">
+              <div class="setting-label">
+                <span>RAG Chunk Overlap</span>
+                <span class="range-value" id="settings-chunk-overlap-val">200 chars</span>
+              </div>
+              <input type="range" class="range-slider" id="settings-chunk-overlap" min="50" max="800" step="25" value="200">
+              <span style="font-size: 9px; color: var(--text-muted);">Configures overlapping text between neighboring chunks to preserve semantic integrity at cut borders.</span>
+            </div>
+
+            <!-- Group E: Retrieval Count -->
+            <div class="setting-group slider-group">
+              <div class="setting-label">
+                <span>Retrieval Count (Top K)</span>
+                <span class="range-value" id="settings-top-k-val">4 chunks</span>
+              </div>
+              <input type="range" class="range-slider" id="settings-top-k" min="1" max="10" step="1" value="4">
+              <span style="font-size: 9px; color: var(--text-muted);">Determines the number of top-ranked context segments injected into the LLM system prompt.</span>
+            </div>
+
+            <!-- Group F: Clear All Local Data -->
+            <div class="setting-group slider-group" style="justify-content: center; gap: 15px;">
+              <h3 style="font-size: 13px; color: var(--text-primary);">Reset Application Cache</h3>
+              <p style="font-size: 11px; color: var(--text-muted);">Deletes all local vector stores, uploaded documents, chat transcripts, and configurations immediately.</p>
+              <button class="btn-futuristic" id="clear-all-data-btn" style="background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple)); border-color: rgba(236, 72, 153, 0.4); box-shadow: 0 0 10px var(--neon-pink-glow);">
+                <i class="fa-solid fa-radiation"></i> Wipe Memory Core
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      <!-- VIEW 6: EXAM PREPARATION ASSISTANT -->
+      <section class="view-section" id="view-examprep">
+        <div class="glass-card" style="padding: 24px; flex-grow: 1; overflow-y: auto;">
+
+          <div class="panel-header">
+            <i class="fa-solid fa-fire"></i> AI Exam Preparation Assistant
+          </div>
+
+          <!-- Controls Bar -->
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; align-items: center;">
+            <select id="exam-category-select" class="setting-input" style="width: auto; min-width: 200px; padding: 10px 14px; border-radius: 10px; cursor: pointer;">
+              <option value="all">🎯 Full Exam Analysis</option>
+              <option value="unit-wise">📚 Unit-Wise Important Questions</option>
+              <option value="most-important">🔥 Most Important Topics</option>
+              <option value="long-answer">📝 Expected Long Answer (10 marks)</option>
+              <option value="short-answer">⚡ Expected Short Answer (2-5 marks)</option>
+              <option value="mcq">🧠 MCQ Bank</option>
+              <option value="viva">❓ Viva Questions</option>
+              <option value="revision">📋 Quick Revision Notes</option>
+              <option value="definitions">📖 Important Definitions</option>
+              <option value="numerical">🔢 Numerical / Problem Solving</option>
+            </select>
+
+            <select id="exam-difficulty-select" class="setting-input" style="width: auto; min-width: 140px; padding: 10px 14px; border-radius: 10px; cursor: pointer;">
+              <option value="mixed">All Difficulty</option>
+              <option value="easy">🟢 Easy</option>
+              <option value="medium">🟡 Medium</option>
+              <option value="hard">🔴 Hard</option>
+            </select>
+
+            <select id="exam-lang-select" class="setting-input" style="width: auto; min-width: 120px; padding: 10px 14px; border-radius: 10px; cursor: pointer;">
+              <option value="english">English</option>
+              <option value="hindi">Hindi</option>
+              <option value="hinglish">Hinglish</option>
+            </select>
+
+            <button class="btn-futuristic" id="generate-exam-btn" style="padding: 10px 20px; font-size: 11px;">
+              <i class="fa-solid fa-bolt"></i> Generate
+            </button>
+
+            <div style="margin-left: auto; display: flex; gap: 8px;">
+              <button class="btn-icon" id="exam-download-txt-btn" title="Download as TXT">
+                <i class="fa-solid fa-file-lines"></i>
+              </button>
+              <button class="btn-icon" id="exam-copy-btn" title="Copy All">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Exam Prep Banner (before generation) -->
+          <div id="exam-prep-banner" class="hub-action-banner">
+            <i class="fa-solid fa-fire" style="font-size: 48px; color: var(--neon-pink); filter: drop-shadow(0 0 15px var(--neon-pink-glow));"></i>
+            <h2 style="margin-top: 10px;">AI Exam Question Predictor</h2>
+            <p class="banner-desc">
+              Upload your syllabus PDF, textbooks, or previous-year papers in the <strong>PDF Manager</strong>.
+              Then select a question category above and hit <strong>Generate</strong>.
+              The AI will analyze your material using RAG and predict the most important exam questions, topics, and revision notes.
+            </p>
+          </div>
+
+          <!-- Generated Results Container -->
+          <div id="exam-results-container" style="display: none;">
+            <!-- Results will be rendered here as styled markdown -->
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- PDF.js library and worker CDNs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  
+  <script>
+    // Link workerSrc before loading app.js
+    if (typeof pdfjsLib !== 'undefined') {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
+
+  <!-- Marked.js Markdown Library CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- Prism.js Library CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <!-- Main Application Logic Script -->
+  <script src="app.js"></script>
+</body>
+</html>
